@@ -37,6 +37,22 @@ const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
     const copyEmails = [...emails].filter((e) => e.id !== email.id);
     setEmails(copyEmails);
   };
+
+  const handleReadEmail = async (e: any, email: Email) => {
+    e.preventDefault();
+    await UserAPI.markEmailAsRead(email);
+    let data: Email[] = [];
+    if (emailType === "inbox") {
+      data = await UserAPI.getInboxEmails(user.email);
+    } else {
+      data = await UserAPI.getSentEmails(user.email);
+    }
+    setEmails(data);
+    setSelectedEmail({ ...email, status: "READ" });
+    setEmailReadView();
+    openModal();
+  };
+
   return (
     <div className="flex flex-col">
       <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -102,11 +118,7 @@ const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
                     <td className="px-2 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex">
                         <button
-                          onClick={() => {
-                            setSelectedEmail(email);
-                            setEmailReadView();
-                            openModal();
-                          }}
+                          onClick={(e) => handleReadEmail(e, email)}
                           type="button"
                         >
                           <OpenEmail />

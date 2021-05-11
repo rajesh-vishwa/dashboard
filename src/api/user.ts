@@ -100,6 +100,23 @@ const UserAPI = {
       return [];
     }
   },
+  markEmailAsRead: async (email: Email) => {
+    try {
+      const data: any = window.localStorage.getItem(EMAILS_TOKEN);
+      if (data) {
+        const emails: Email[] = JSON.parse(data);
+        const findIndex = emails.findIndex((e) => e.id === email.id);
+        emails[findIndex] = { ...email, status: "READ" };
+
+        if (emails) {
+          window.localStorage.setItem(EMAILS_TOKEN, JSON.stringify(emails));
+        }
+        // return email;
+      } else {
+        // return [];
+      }
+    } catch (error) {}
+  },
 };
 
 export default UserAPI;
