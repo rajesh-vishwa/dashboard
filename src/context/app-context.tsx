@@ -4,12 +4,15 @@ import React, {
   useMemo,
   useReducer,
 } from "react";
-import { USERS_TOKEN } from "../utils/constant";
+import { users, emails } from "../data/data";
+import { EMAILS_TOKEN, USERS_TOKEN } from "../utils/constant";
 
 export type Email = {
   id: string;
   to: string;
   cc: string;
+  from: string;
+  fromName: string;
   subject: string;
   body: string;
   status: "NEW" | "READ";
@@ -26,12 +29,17 @@ type AppContextState = {
   user: User | null;
   displayModal: boolean;
   modalView: ModalViews;
+  selectedEmail: Email | null;
+  userEmails: Email[];
 };
 
 const initialState: AppContextState = {
-  user: { id: 1, email: "user1@test.com", password: "test", name: "User One" },
+  // make user null when deplay on production
+  user: null,
   displayModal: false,
   modalView: "EMAIL_COMPOSE_VIEW",
+  selectedEmail: null,
+  userEmails: [],
 };
 
 type Action =
@@ -50,6 +58,14 @@ type Action =
       payload: ModalViews;
     }
   | {
+      type: "SELECTED_EMAIL";
+      payload: Email;
+    }
+  | {
+      type: "USER_EMAILS";
+      payload: Email[];
+    }
+  | {
       type: "LOGOUT";
     };
 
@@ -61,7 +77,12 @@ function appReducer(state: AppContextState, action: Action) {
         user: action.payload,
       };
     }
-
+    case "USER_EMAILS": {
+      return {
+        ...state,
+        userEmails: action.payload,
+      };
+    }
     case "MODAL_VIEW": {
       return {
         ...state,
@@ -85,6 +106,14 @@ function appReducer(state: AppContextState, action: Action) {
         ...state,
         user: null,
         displayModal: false,
+        selectedEmail: null,
+        userEmails: [],
+      };
+    }
+    case "SELECTED_EMAIL": {
+      return {
+        ...state,
+        selectedEmail: action.payload,
       };
     }
     default: {
@@ -105,19 +134,24 @@ export const AppProvider: FunctionComponent = ({ children }) => {
 
   const openModal = () => dispatch({ type: "OPEN_MODAL" });
   const closeModal = () => dispatch({ type: "CLOSE_MODAL" });
-  const setModalView = (view: ModalViews) =>
-    dispatch({ type: "MODAL_VIEW", payload: view });
+  const setEmailComposeView = () =>
+    dispatch({ type: "MODAL_VIEW", payload: "EMAIL_COMPOSE_VIEW" });
 
+  const setEmailReadView = () =>
+    dispatch({ type: "MODAL_VIEW", payload: "EMAIL_READ_VIEW" });
+
+  const setSelectedEmail = (email: Email) =>
+    dispatch({ type: "SELECTED_EMAIL", payload: email });
+
+  const setUserEmails = (emails: Email[]) =>
+    dispatch({ type: "USER_EMAILS", payload: emails });
   const logout = async () => dispatch({ type: "LOGOUT" });
 
   useEffect(() => {
     // load user and default emails
 
-    const users: User[] = [
-      { id: 1, email: "user1@test.com", password: "test", name: "User One" },
-      { id: 2, email: "user2@test.com", password: "test", name: "User Two" },
-    ];
     window.localStorage.setItem(USERS_TOKEN, JSON.stringify(users));
+    window.localStorage.setItem(EMAILS_TOKEN, JSON.stringify(emails));
     return () => {};
   }, []);
 
@@ -127,7 +161,10 @@ export const AppProvider: FunctionComponent = ({ children }) => {
       authenticated,
       closeModal,
       openModal,
-      setModalView,
+      setEmailComposeView,
+      setEmailReadView,
+      setSelectedEmail,
+      setUserEmails,
       logout,
     }),
     [state]

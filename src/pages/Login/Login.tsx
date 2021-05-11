@@ -15,7 +15,7 @@ const Login: FunctionComponent = () => {
 
     try {
       const user = await UserAPI.login(email, password);
-      console.log(`user: `, user);
+
       if (user) {
         authenticated(user);
       } else {

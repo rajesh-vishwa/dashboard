@@ -1,16 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import UserAPI from "../../api/user";
+import { Email, useApp } from "../../context/app-context";
+import Delete from "../Icons/Delete";
+import OpenEmail from "../Icons/OpenEmail";
+import Input from "../Input";
 
-const people = [
-  {
-    name: "Jane Cooper",
-    title: "Regional Paradigm Technician",
-    department: "Optimization",
-    role: "Admin",
-    email: "jane.cooper@example.com",
-  },
-];
+const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
+  emailType,
+}) => {
+  const {
+    user,
+    openModal,
+    setEmailReadView,
+    setSelectedEmail,
+    selectedEmail,
+  } = useApp();
+  const [emails, setEmails] = useState<Email[]>([]);
 
-const EmailList = () => {
+  const run = async () => {
+    let data: Email[] = [];
+    if (emailType === "inbox") {
+      data = await UserAPI.getInboxEmails(user.email);
+    } else {
+      data = await UserAPI.getSentEmails(user.email);
+    }
+    setEmails(data);
+  };
+
+  useEffect(() => {
+    run();
+  }, [emailType, selectedEmail]);
+
+  const handleDelete = async (e: any, email: Email) => {
+    e.preventDefault();
+    const result = await UserAPI.deleteEmailById(email.id);
+    const copyEmails = [...emails].filter((e) => e.id !== email.id);
+    setEmails(copyEmails);
+  };
   return (
     <div className="flex flex-col">
       <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -19,7 +45,13 @@ const EmailList = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th colSpan={3}>Inbox</th>
+                  <th colSpan={3}>
+                    {emailType === "inbox"
+                      ? `Inbox (${
+                          emails.map((e) => e.status === "NEW").length
+                        }) `
+                      : "Sent Items"}
+                  </th>
                 </tr>
                 <tr>
                   <th
@@ -41,30 +73,52 @@ const EmailList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {people.map((person) => (
-                  <tr key={person.email}>
+                {emails.map((email) => (
+                  <tr key={email.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
+                        <div className="flex-shrink-0 h-4 w-4">
+                          <Input
+                            id="chk-email"
+                            label=""
+                            type="checkbox"
+                            name=""
+                            onChange={() => {}}
+                          />
+                        </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {person.name}
+                            {emailType === "inbox" ? email.from : email.to}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {person.title}
+                        {email.subject}
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a
-                        href="#"
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        View
-                      </a>
+                    <td className="px-2 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex">
+                        <button
+                          onClick={() => {
+                            setSelectedEmail(email);
+                            setEmailReadView();
+                            openModal();
+                          }}
+                          type="button"
+                        >
+                          <OpenEmail />
+                        </button>
+                        <button
+                          type="button"
+                          className="ml-2"
+                          onClick={(e) => handleDelete(e, email)}
+                        >
+                          <Delete />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
 import EmailList from "../../components/EmailList/EmailList";
 import Nav from "../../components/Nav/Nav";
+import cn from "classnames";
 import { useApp } from "../../context/app-context";
 
 const Dashboard = () => {
-  const { user } = useApp();
+  const { user, openModal, setEmailComposeView } = useApp();
+  const [emailType, setEmailType] = useState<"inbox" | "sent">("inbox");
   return (
     <>
       <div>
@@ -33,16 +35,40 @@ const Dashboard = () => {
           <div className="mt-5 md:mt-0 md:col-span-4 bg-gray-100">
             <Nav />
             <div className="mt-5 grid grid-cols-4">
-              <div className=" ml-2 mr-2 col-span-1">
-                <Button
-                  type="button"
-                  style={{ backgroundColor: "rgba(16, 185, 129, 1)" }}
+              <div className=" ml-2 mr-2 col-span-1 divide-y divide-gray-300">
+                <div>
+                  <Button
+                    type="button"
+                    style={{ backgroundColor: "rgba(16, 185, 129, 1)" }}
+                    onClick={() => {
+                      setEmailComposeView();
+                      openModal();
+                    }}
+                  >
+                    Compose Mail
+                  </Button>
+                </div>
+                <div
+                  className={cn(
+                    " mt-2 font-thin text-gray-500 cursor-pointer ",
+                    { "font-medium": emailType === "inbox" }
+                  )}
+                  onClick={() => setEmailType("inbox")}
                 >
-                  Compose Mail
-                </Button>
+                  Inbox
+                </div>
+                <div
+                  className={cn(
+                    " mt-2 font-thin text-gray-500 cursor-pointer ",
+                    { "font-medium": emailType === "sent" }
+                  )}
+                  onClick={() => setEmailType("sent")}
+                >
+                  Sent
+                </div>
               </div>
               <div className="col-span-3">
-                <EmailList />
+                <EmailList emailType={emailType} />
               </div>
             </div>
           </div>
