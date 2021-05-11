@@ -24,7 +24,7 @@ const ComposeEmailView = () => {
       body: body,
       status: "NEW",
     };
-    const emails = await UserAPI.composeEmail(composedEmail);
+    await UserAPI.composeEmail(composedEmail);
     setSelectedEmail(composedEmail);
     closeModal();
   };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import UserAPI from "../../api/user";
 import { Email, useApp } from "../../context/app-context";
 import Delete from "../Icons/Delete";
@@ -17,7 +17,7 @@ const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
   } = useApp();
   const [emails, setEmails] = useState<Email[]>([]);
 
-  const run = async () => {
+  const run = useCallback(async () => {
     let data: Email[] = [];
     if (emailType === "inbox") {
       data = await UserAPI.getInboxEmails(user.email);
@@ -25,15 +25,15 @@ const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
       data = await UserAPI.getSentEmails(user.email);
     }
     setEmails(data);
-  };
+  }, [emailType, user]);
 
   useEffect(() => {
     run();
-  }, [emailType, selectedEmail]);
+  }, [emailType, selectedEmail, run]);
 
   const handleDelete = async (e: any, email: Email) => {
     e.preventDefault();
-    const result = await UserAPI.deleteEmailById(email.id);
+    await UserAPI.deleteEmailById(email.id);
     const copyEmails = [...emails].filter((e) => e.id !== email.id);
     setEmails(copyEmails);
   };
