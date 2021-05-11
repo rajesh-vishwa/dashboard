@@ -64,7 +64,7 @@ const EmailList: React.FC<{ emailType: "inbox" | "sent" }> = ({
                   <th colSpan={3}>
                     {emailType === "inbox"
                       ? `Inbox (${
-                          emails.map((e) => e.status === "NEW").length
+                          emails.filter((e) => e.status === "NEW").length
                         }) `
                       : "Sent Items"}
                   </th>
