@@ -14,3 +14,10 @@ install dependecies.
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+#### `User`
+
+use below credentials for login.
+
+1. user1@test.com --- password: test
+2. user2@test.com --- password: test
